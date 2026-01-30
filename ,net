@@ -1,0 +1,115 @@
+Step-by-Step Explanation
+1. Models Folder
+Student.cs → Represents the student entity with properties like Id, Name, USN.
+
+StudentRegistration.cs → Represents the registration form model with validation attributes.
+
+csharp
+public class Student
+{
+    public int Id { get; set; }
+    public string Name { get; set; }
+    public string USN { get; set; }
+}
+csharp
+public class StudentRegistration
+{
+    [Required]
+    public string Name { get; set; }
+
+    [Required]
+    [StringLength(10)]
+    public string USN { get; set; }
+
+    [EmailAddress]
+    public string Email { get; set; }
+}
+2. Controllers Folder
+StudentController.cs → Handles requests, returns views, and demonstrates action results.
+
+csharp
+public class StudentController : Controller
+{
+    public IActionResult Index()
+    {
+        var students = new List<Student>
+        {
+            new Student { Id = 1, Name = "Alice", USN = "USN001" },
+            new Student { Id = 2, Name = "Bob", USN = "USN002" }
+        };
+        return View(students);
+    }
+
+    public IActionResult Register() => View();
+
+    [HttpPost]
+    public IActionResult Register(StudentRegistration student)
+    {
+        if (ModelState.IsValid)
+        {
+            return RedirectToAction("Index");
+        }
+        return View(student);
+    }
+
+    public IActionResult ConfigDemo()
+    {
+        ViewBag.InstituteName = _config["StudentSettings:InstituteName"];
+        return View();
+    }
+}
+3. Views Folder
+Index.cshtml → Displays student list in a table.
+
+Register.cshtml → Registration form with validation.
+
+ConfigDemo.cshtml → Displays configuration values.
+
+Example Index.cshtml:
+
+html
+@model IEnumerable<StudentDemoApp.Models.Student>
+
+<h2>Student List</h2>
+<table>
+    <tr><th>ID</th><th>Name</th><th>USN</th></tr>
+    @foreach (var s in Model)
+    {
+        <tr>
+            <td>@s.Id</td>
+            <td>@s.Name</td>
+            <td>@s.USN</td>
+        </tr>
+    }
+</table>
+4. wwwroot Folder
+Contains static files like CSS, JS, images, and HTML.
+
+Example: student-info.html → served directly via browser.
+
+5. appsettings.json
+Stores configuration values.
+
+json
+{
+  "StudentSettings": {
+    "InstituteName": "ABC Institute",
+    "MaxStudents": 500
+  }
+}
+6. Program.cs
+Configures services, middleware, and routing.
+
+csharp
+var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddControllersWithViews();
+
+var app = builder.Build();
+app.UseStaticFiles();
+app.UseRouting();
+
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Student}/{action=Index}/{id?}");
+
+app.Run();
